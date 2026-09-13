@@ -1,0 +1,16 @@
+{
+  "name": "lld-practice-platform",
+  "private": true,
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "backend:dev": "npm run dev --workspace=packages/backend",
+    "backend:build": "npm run build --workspace=packages/backend",
+    "backend:test": "npm run test --workspace=packages/backend",
+    "backend:seed": "npm run seed --workspace=packages/backend",
+    "frontend:dev": "npm run dev --workspace=packages/frontend",
+    "frontend:build": "npm run build --workspace=packages/frontend"
+  }
+}

@@ -1,0 +1,75 @@
+// Prisma schema for the LLD Practice Platform.
+//
+// Design note: this schema is intentionally "dumb" storage — JSON columns hold
+// structured content (requirements, submission content, findings) as strings.
+// All parsing/validation happens in the domain and infra/prisma repository
+// layer, NOT here. This keeps the ORM a persistence detail rather than a
+// source of domain types, so swapping SQLite for PostgreSQL later only
+// requires changing `provider` + `url` below (JSON columns work the same way
+// as TEXT in both, since we serialize ourselves rather than relying on a
+// native JSON type).
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Problem {
+  id                 String   @id @default(uuid())
+  slug               String   @unique
+  title              String
+  summary            String
+  requirementsJson   String // JSON string: string[]
+  constraintsJson    String // JSON string: string[]
+  expectedEntitiesJson String // JSON string: ExpectedEntityHint[]
+  variationPointsJson String // JSON string: VariationPointHint[]
+  createdAt          DateTime @default(now())
+
+  attempts Attempt[]
+}
+
+model Attempt {
+  id          String   @id @default(uuid())
+  problemId   String
+  learnerId   String
+  status      String // 'draft' | 'submitted' | 'evaluating' | 'evaluated' | 'failed'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  problem     Problem      @relation(fields: [problemId], references: [id])
+  submissions Submission[]
+
+  @@index([learnerId, problemId])
+}
+
+model Submission {
+  id         String   @id @default(uuid())
+  attemptId  String
+  format     String // 'structured-oop' (extensible)
+  contentJson String // JSON string: SubmissionContent
+  createdAt  DateTime @default(now())
+
+  attempt    Attempt      @relation(fields: [attemptId], references: [id])
+  evaluations Evaluation[]
+
+  @@index([attemptId])
+}
+
+model Evaluation {
+  id             String   @id @default(uuid())
+  submissionId   String
+  evaluatorKind  String // 'deterministic' | 'llm'
+  status         String // 'ok' | 'unavailable' | 'error'
+  findingsJson   String // JSON string: Finding[]
+  strengthsJson  String // JSON string: Finding[]
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+
+  @@index([submissionId])
+}

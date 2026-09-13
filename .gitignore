@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+*.log
+*.tsbuildinfo
+
+# SQLite databases (dev + test) - not committed, created by setup/seed/test steps
+packages/backend/*.db
+packages/backend/*.db-journal
+packages/backend/prisma/*.db
+packages/backend/prisma/*.db-journal
+
+# Env files with potential secrets - .env.example is committed instead
+packages/backend/.env
+packages/frontend/.env.local
+
+.DS_Store
